@@ -111,7 +111,7 @@ def data_transform(df):
 st.set_page_config(layout='wide')
 
 # call functions
-data = load_data('dataset\zomato.csv')
+data = load_data('zomato.csv')
 data = rename_columns(data)
 data['country_code'] = data['country_code'].map(country_name)
 data["amount_usd"] = data.apply(lambda row: convert_to_usd(row["average_cost_for_two"], row["currency"]), axis=1)
