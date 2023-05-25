@@ -4,38 +4,16 @@ import plotly.express as px
 import streamlit as st
 
 from PIL import Image
-# load dataset
+
+# Load dataset
 def load_data(path):
    data = pd.read_csv(path)
    return data
 
-# price range category
-def create_price_tye(price_range):
-    if price_range == 1:
-     return "cheap"
-    elif price_range == 2:
-     return "normal"
-    elif price_range == 3:
-     return "expensive"
-    else:
-     return "gourmet"
 
-# colors
-COLORS = {
-"3F7E00": "darkgreen",
-"5BA829": "green",
-"9ACD32": "lightgreen",
-"CDD614": "orange",
-"FFBA00": "red",
-"CBCBC8": "darkred",
-"FF7800": "darkred",
-}
-def color_name(color_code):
-    return COLORS[color_code]
-
-# rename columns set underscore
+# Rname columns set underscore
 def rename_columns(dataframe):
-    df = data.copy()
+    df = dataframe.copy()
     title = lambda x: inflection.titleize(x)
     snakecase = lambda x: inflection.underscore(x)
     spaces = lambda x: x.replace(" ", "")
@@ -46,7 +24,7 @@ def rename_columns(dataframe):
     df.columns = cols_new
     return df
 
-# country names function
+# Country names function
 COUNTRIES = {
 1: "India",
 14: "Australia",
@@ -64,10 +42,11 @@ COUNTRIES = {
 215: "England",
 216: "United States of America",
 }
+
 def country_name(country_id):
     return COUNTRIES[country_id]
 
-# convert values to us dollar
+# Convert values to us dollar
 exchange_rates = {
     'Botswana Pula(P)': 0.018,
     'Brazilian Real(R$)': 0.20,
@@ -82,13 +61,14 @@ exchange_rates = {
     'Turkish Lira(TL)': 0.050,
     'Dollar($)' : 1.0
 }
+
 def convert_to_usd(amount, currency):
     if currency in exchange_rates:
         return amount * exchange_rates[currency]
     else:
         return None
 
-# data cleaning
+# Data cleaning and transformation
 def data_transform(df):
    # drop rows with null values
     df = df.dropna()
@@ -104,76 +84,107 @@ def data_transform(df):
     df = df.loc[filt, :]
     return df
 
+# Data visualization
+def data_viz(df):
+    # Set streamlit page
+    st.set_page_config(layout='wide')
 
-# set streamlit page
-st.set_page_config(layout='wide')
+    # Sidebar title
+    st.sidebar.header('Food Zone')
+    st.sidebar.subheader('Your food in your zone')
+    st.sidebar.write("""___""")
 
-# call functions
-data = load_data('zomato.csv')
-data = rename_columns(data)
-data['country_code'] = data['country_code'].map(country_name)
-data["amount_usd"] = data.apply(lambda row: convert_to_usd(row["average_cost_for_two"], row["currency"]), axis=1)
-df = data_transform(data)
-
-
-################################################################################################
-#image = Image.open('dataset\logo.png')
-#st.sidebar.image(image, width=150)
-st.sidebar.header('Food Zone')
-st.sidebar.subheader('Your food in your zone')
-st.sidebar.write("""___""")
-
-# filter
-st.sidebar.markdown('# Filters')
-country_filter = st.sidebar.multiselect(label='Choose the countries',
-                       options=df['country_code'].unique(),
-                       default=df['country_code'].unique())
-
-#__________________________________________________________________________________________
-# filter functionality 
-select_row = df['country_code'].isin(country_filter)
-df = df.loc[select_row, :]
-
-#_________________________________________________________________________________________
-st.sidebar.write("""___""")
-
-st.title('🌎Country Vision')
+    # Filter
+    st.sidebar.markdown('# Filters')
+    country_filter = st.sidebar.multiselect(
+        label='Choose the countries',
+        options=df['country_code'].unique(),
+        default=df['country_code'].unique()
+    )
 
 
-## GRAPHS AND TABLES ##
+    # Filter functionality 
+    select_row = df['country_code'].isin(country_filter)
+    df = df.loc[select_row, :]
 
-# restaurants by country
-with st.container():
-    restaurant_by_country = df[['restaurant_id', 'country_code']].groupby('country_code').nunique().sort_values('restaurant_id', ascending=False).reset_index()
-    fig = px.bar(restaurant_by_country, x='country_code', y='restaurant_id', text_auto=True, 
-                 labels={'country_code': 'Country', 'restaurant_id': 'Nº Restaurants'},
-                 title='Restaurants per Country')
-    st.plotly_chart(fig, use_container_width=True)
+    st.sidebar.write("""___""")
 
-# cities by country
-with st.container():
-   country_by_city = df[['country_code', 'city']].groupby('country_code').nunique().sort_values('city', ascending=False).reset_index()
-   fig = px.bar(country_by_city, x='country_code', y='city', text_auto=True, 
-                labels={'city': 'Cities', 'country_code': 'Country'},
-                title='Cities per Country')
-   st.plotly_chart(fig, use_container_width=True)
+    # Home Page
+    st.title('🌎Country Vision')
 
-with st.container():
-   col1, col2 = st.columns(2)
+    # Restaurants by country bar chart
+    with st.container():
 
-    # AVG votes by restaurant in each country'
-   with col1:
-      votes_by_country = df[['country_code', 'votes']].groupby('country_code').mean().sort_values('votes', ascending=False).reset_index()
-      fig = px.bar(votes_by_country, x='country_code', y='votes', text_auto=True,
-                   title='AVG votes by restaurant in each country',
-                   labels={'country_code': 'Country', 'votes': 'Votes'})
-      st.plotly_chart(fig, use_container_width=True)
+        
+        restaurant_by_country = df[['restaurant_id', 'country_code']].groupby('country_code').nunique().sort_values('restaurant_id', ascending=False).reset_index()
+        fig = px.bar(restaurant_by_country, 
+                    x='country_code',
+                    y='restaurant_id',
+                    text_auto=True,
+                    labels={'country_code': 'Country', 'restaurant_id': 'Nº Restaurants'},
+                    title='Restaurants per Country'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Cities by country bar chart
+    with st.container():
+        country_by_city = df[['country_code', 'city']].groupby('country_code').nunique().sort_values('city', ascending=False).reset_index()
+        fig = px.bar(country_by_city,
+                    x='country_code',
+                    y='city', text_auto=True, 
+                    labels={'city': 'Cities', 'country_code': 'Country'},
+                    title='Cities per Country'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Avg votes and price charts
+    with st.container():
+        col1, col2 = st.columns(2)
+
+        # AVG votes by restaurant in each country'
+        with col1:
+            votes_by_country = df[['country_code', 'votes']].groupby('country_code').mean().sort_values('votes', ascending=False).reset_index()
+            fig = px.bar(votes_by_country,
+                        x='country_code',
+                        y='votes', text_auto=True,
+                        title='AVG votes by restaurant in each country',
+                        labels={'country_code': 'Country', 'votes': 'Votes'}
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            
+        # AVG price for two by country
+        with col2:
+            votes_by_country = df[['country_code', 'amount_usd']].groupby('country_code').mean().sort_values('amount_usd', ascending=False).reset_index()
+            fig = px.bar(votes_by_country, 
+                        x='country_code',
+                        y='amount_usd',
+                        text_auto=True,
+                        title='AVG price for two by country',
+                        labels={'country_code': 'Country', 'amount_usd': 'Price'}
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+
+# Main function
+def main():
+    # Load data
+    data = load_data('dataset/zomato.csv')
+
+    # Rename columns
+    data = rename_columns(data)
+
+    # Map country code to names
+    data['country_code'] = data['country_code'].map(country_name)
+
+    # Convert average cost to USD
+    data["amount_usd"] = data.apply(lambda row: convert_to_usd(row["average_cost_for_two"], row["currency"]), axis=1)
     
-    # AVG price for two by country
-   with col2:
-    votes_by_country = df[['country_code', 'amount_usd']].groupby('country_code').mean().sort_values('amount_usd', ascending=False).reset_index()
-    fig = px.bar(votes_by_country, x='country_code', y='amount_usd', text_auto=True,
-                    title='AVG price for two by country',
-                    labels={'country_code': 'Country', 'amount_usd': 'Price'})
-    st.plotly_chart(fig, use_container_width=True)
-      
+    # Apply data cleaning and transformation
+    df = data_transform(data)
+
+    # Perform data visualization
+    data_viz(df)
+
+# Run the main function
+if __name__ == '__main__':
+    main()
