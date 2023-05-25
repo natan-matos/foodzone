@@ -118,7 +118,7 @@ df = data_transform(data)
 #_____________________________________________________--
 
 ################################################################################################
-image = Image.open('dataset\logo.png')
+image = Image.open('logo.png')
 st.sidebar.image(image, width=150)
 st.sidebar.header('Food Zone')
 st.sidebar.subheader('Your food in your zone')
