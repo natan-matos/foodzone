@@ -168,7 +168,7 @@ def data_viz(df):
 # Main function
 def main():
     # Load data
-    data = load_data('foodzone/dataset/zomato.csv')
+    data = load_data('zomato.csv')
 
     # Rename columns
     data = rename_columns(data)
