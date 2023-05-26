@@ -221,7 +221,7 @@ def data_viz(df):
          
 def main():      
    # Load data
-   data = load_data('../dataset/zomato.csv')
+   data = load_data('zomato.csv')
 
    # Raname columns
    data = rename_columns(data)
