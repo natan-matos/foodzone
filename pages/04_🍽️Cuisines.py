@@ -90,7 +90,7 @@ def data_viz(df):
    st.set_page_config(layout='wide')
 
    # Sidebar configuration
-   image = Image.open('dataset\logo.png')
+   image = Image.open('logo.png')
    st.sidebar.image(image, width=150)
    st.sidebar.header('Food Zone')
    st.sidebar.subheader('Your food in your zone')
